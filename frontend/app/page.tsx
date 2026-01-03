@@ -21,10 +21,34 @@ interface ClaimResult {
   sources: Source[];
 }
 
+interface CitationResult {
+  raw_citation: string;
+  authors?: string;
+  year?: string;
+  title?: string;
+  venue?: string;
+  pages?: string;
+  status: "VERIFIED" | "HALLUCINATED" | "UNVERIFIABLE";
+  errors: string[];
+  reason: string;
+  sources: Source[];
+}
+
+type VerificationMode = "claims" | "citations";
+
 const DEMO_FACTS = {
   true: "The capital of France is Paris. It is known for the Eiffel Tower, which was completed in 1889.",
   fake: "The moon is made of green cheese and was discovered by Buzz Aldrin in 1969 during the Apollo 11 mission.",
   mixed: "Water boils at 100 degrees Celsius at sea level. However, in the city of Atlantis, it freezes when heated.",
+};
+
+const DEMO_CITATIONS = {
+  correct: `Residual connections help deep neural networks train effectively and enabled very deep "ResNet" architectures.
+He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) (pp. 770–778).`,
+  wrongYear: `Residual connections help deep neural networks train effectively.
+He, K., Zhang, X., Ren, S., & Sun, J. (2015). Deep residual learning for image recognition. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) (pp. 770–778).`,
+  wrongVenue: `Residual connections help deep neural networks train effectively.
+He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep residual learning for image recognition. Nature, 770–778.`,
 };
 
 const HALLUCINATION_FACTS = [
@@ -54,8 +78,10 @@ export default function HallucinationDetector() {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<ClaimResult[] | null>(null);
+  const [citationResults, setCitationResults] = useState<CitationResult[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [factIndex, setFactIndex] = useState(0);
+  const [mode, setMode] = useState<VerificationMode>("claims");
 
   // Preserving original backend connection logic
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -73,9 +99,11 @@ export default function HallucinationDetector() {
     setIsLoading(true);
     setError(null);
     setResults(null);
+    setCitationResults(null);
 
     try {
-      const response = await fetch(`${API_URL}/verify`, {
+      const endpoint = mode === "claims" ? "/verify" : "/verify-citations";
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: inputText }),
@@ -84,8 +112,12 @@ export default function HallucinationDetector() {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
-      // Preserving original data structure expectation (data.results)
-      setResults(data.results || []);
+      
+      if (mode === "claims") {
+        setResults(data.results || []);
+      } else {
+        setCitationResults(data.results || []);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
       console.error("API Error:", err);
@@ -98,6 +130,16 @@ export default function HallucinationDetector() {
     setInputText(DEMO_FACTS[type]);
     setError(null);
     setResults(null);
+    setCitationResults(null);
+    setMode("claims");
+  };
+
+  const fillCitationDemo = (type: keyof typeof DEMO_CITATIONS) => {
+    setInputText(DEMO_CITATIONS[type]);
+    setError(null);
+    setResults(null);
+    setCitationResults(null);
+    setMode("citations");
   };
 
   return (
@@ -123,9 +165,40 @@ export default function HallucinationDetector() {
 
         {/* Input Section */}
         <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
+          {/* Mode Toggle */}
+          <div className="flex justify-center">
+            <div className="inline-flex bg-slate-900/50 border border-slate-800 rounded-lg p-1">
+              <button
+                onClick={() => { setMode("claims"); setResults(null); setCitationResults(null); }}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                  mode === "claims" 
+                    ? "bg-blue-600 text-white shadow-lg" 
+                    : "text-slate-400 hover:text-white"
+                )}
+              >
+                Verify Claims
+              </button>
+              <button
+                onClick={() => { setMode("citations"); setResults(null); setCitationResults(null); }}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium rounded-md transition-all",
+                  mode === "citations" 
+                    ? "bg-blue-600 text-white shadow-lg" 
+                    : "text-slate-400 hover:text-white"
+                )}
+              >
+                Verify Citations
+              </button>
+            </div>
+          </div>
+
           <div className="relative group">
             <textarea
-              placeholder="Paste the text you want to verify here..."
+              placeholder={mode === "claims" 
+                ? "Paste the text you want to verify here..." 
+                : "Paste text with academic citations to verify (author, year, title, venue, pages)..."
+              }
               className="w-full min-h-[240px] p-6 text-lg bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl hover:border-blue-500/50 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all resize-none shadow-2xl outline-none placeholder:text-slate-600"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -142,15 +215,31 @@ export default function HallucinationDetector() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => fillDemo("true")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
-                Try True Fact
-              </button>
-              <button onClick={() => fillDemo("fake")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
-                Try Fake Fact
-              </button>
-              <button onClick={() => fillDemo("mixed")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
-                Try Mixed Content
-              </button>
+              {mode === "claims" ? (
+                <>
+                  <button onClick={() => fillDemo("true")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
+                    Try True Fact
+                  </button>
+                  <button onClick={() => fillDemo("fake")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
+                    Try Fake Fact
+                  </button>
+                  <button onClick={() => fillDemo("mixed")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
+                    Try Mixed Content
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => fillCitationDemo("correct")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-green-800/50 hover:bg-green-900/30 hover:text-white text-slate-300 transition-colors">
+                    Correct Citation
+                  </button>
+                  <button onClick={() => fillCitationDemo("wrongYear")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-yellow-800/50 hover:bg-yellow-900/30 hover:text-white text-slate-300 transition-colors">
+                    Wrong Year
+                  </button>
+                  <button onClick={() => fillCitationDemo("wrongVenue")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-red-800/50 hover:bg-red-900/30 hover:text-white text-slate-300 transition-colors">
+                    Wrong Venue
+                  </button>
+                </>
+              )}
             </div>
 
             <button
@@ -178,22 +267,27 @@ export default function HallucinationDetector() {
         )}
 
         {/* Results Section */}
-        {results && (
+        {(results || citationResults) && (
           <section className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <h2 className="text-2xl font-bold text-white">Analysis Results</h2>
-              <p className="text-sm text-slate-400">Found {results.length} verifiable claims</p>
+              <p className="text-sm text-slate-400">
+                Found {mode === "claims" ? results?.length : citationResults?.length} {mode === "claims" ? "verifiable claims" : "citations"}
+              </p>
             </div>
 
             <div className="grid gap-6">
-              {results.map((claim, idx) => (
+              {mode === "claims" && results?.map((claim, idx) => (
                 <ClaimCard key={idx} result={claim} />
+              ))}
+              {mode === "citations" && citationResults?.map((citation, idx) => (
+                <CitationCard key={idx} result={citation} />
               ))}
             </div>
 
-            {results.length === 0 && (
+            {((mode === "claims" && results?.length === 0) || (mode === "citations" && citationResults?.length === 0)) && (
               <div className="text-center py-12 text-slate-500 bg-slate-900/30 rounded-xl border border-dashed border-slate-800">
-                No verifiable claims found in the provided text.
+                No {mode === "claims" ? "verifiable claims" : "citations"} found in the provided text.
               </div>
             )}
           </section>
@@ -292,6 +386,119 @@ function ClaimCard({ result }: { result: ClaimResult }) {
           <div className="space-y-2">
             <span className="text-xs font-bold uppercase text-slate-500 tracking-widest">
               Supporting Sources
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {result.sources.map((source, sIdx) => (
+                <a
+                  key={sIdx}
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-md border border-slate-800 transition-colors group"
+                >
+                  {source.title}
+                  <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100" />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CitationCard({ result }: { result: CitationResult }) {
+  const statusConfig = {
+    VERIFIED: {
+      color: "border-green-500/30 bg-green-500/5",
+      icon: <Check className="h-5 w-5 text-green-500" />,
+      label: "Citation Verified",
+      labelColor: "text-green-500",
+    },
+    HALLUCINATED: {
+      color: "border-red-500/30 bg-red-500/5",
+      icon: <AlertCircle className="h-5 w-5 text-red-500" />,
+      label: "Citation Error Detected",
+      labelColor: "text-red-500",
+    },
+    UNVERIFIABLE: {
+      color: "border-yellow-500/30 bg-yellow-500/5",
+      icon: <HelpCircle className="h-5 w-5 text-yellow-500" />,
+      label: "Cannot Verify",
+      labelColor: "text-yellow-500",
+    },
+  };
+
+  const config = statusConfig[result.status] || statusConfig.UNVERIFIABLE;
+
+  return (
+    <div className={cn("overflow-hidden border-l-4 rounded-r-xl border border-slate-800 transition-all hover:translate-x-1 duration-300", config.color)}>
+      <div className="p-6 pb-3">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1 w-full">
+            <div className={cn("flex items-center gap-2 text-sm font-bold uppercase tracking-wider", config.labelColor)}>
+              {config.icon}
+              {config.label}
+            </div>
+            {result.title && (
+              <h3 className="text-lg font-semibold leading-tight text-slate-100">&quot;{result.title}&quot;</h3>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="p-6 pt-0 space-y-4">
+        {/* Citation Details */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          {result.authors && (
+            <div className="bg-slate-900/50 rounded p-2 border border-slate-800/50">
+              <span className="text-xs text-slate-500 block">Authors</span>
+              <span className="text-slate-300">{result.authors}</span>
+            </div>
+          )}
+          {result.year && (
+            <div className="bg-slate-900/50 rounded p-2 border border-slate-800/50">
+              <span className="text-xs text-slate-500 block">Year</span>
+              <span className="text-slate-300">{result.year}</span>
+            </div>
+          )}
+          {result.venue && (
+            <div className="bg-slate-900/50 rounded p-2 border border-slate-800/50">
+              <span className="text-xs text-slate-500 block">Venue</span>
+              <span className="text-slate-300">{result.venue}</span>
+            </div>
+          )}
+          {result.pages && (
+            <div className="bg-slate-900/50 rounded p-2 border border-slate-800/50">
+              <span className="text-xs text-slate-500 block">Pages</span>
+              <span className="text-slate-300">{result.pages}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Errors Found */}
+        {result.errors && result.errors.length > 0 && (
+          <div className="p-3 rounded bg-red-950/30 border border-red-900/50">
+            <span className="font-bold block mb-2 text-red-400 text-sm">Errors Found:</span>
+            <ul className="list-disc list-inside text-red-300 text-sm space-y-1">
+              {result.errors.map((error, idx) => (
+                <li key={idx}>{error}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Reasoning */}
+        <div className="p-3 rounded bg-slate-950/50 text-slate-300 text-sm leading-relaxed border border-slate-800/50">
+          <span className="font-bold block mb-1 text-slate-400">Analysis:</span>
+          {result.reason}
+        </div>
+
+        {/* Sources */}
+        {result.sources && result.sources.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-xs font-bold uppercase text-slate-500 tracking-widest">
+              Reference Sources
             </span>
             <div className="flex flex-wrap gap-2">
               {result.sources.map((source, sIdx) => (
