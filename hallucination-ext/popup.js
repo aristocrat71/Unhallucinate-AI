@@ -1,10 +1,14 @@
 // Configuration - Your Render.io backend URL
 const BACKEND_URL = 'https://gfgbq-team-syntaxnchill.onrender.com';
-const API_ENDPOINT = `${BACKEND_URL}/verify`;
+
+// Mode state
+let currentMode = 'fact'; // 'fact' or 'citation'
 
 // Get DOM elements
 const textInput = document.getElementById('text-input');
 const verifyBtn = document.getElementById('verify-btn');
+const factCheckBtn = document.getElementById('fact-check-mode');
+const citationCheckBtn = document.getElementById('citation-check-mode');
 const resultsContainer = document.getElementById('results-container');
 const errorContainer = document.getElementById('error-container');
 const claimsList = document.getElementById('claims-list');
@@ -35,6 +39,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// Mode toggle handlers
+factCheckBtn.addEventListener('click', () => {
+  currentMode = 'fact';
+  factCheckBtn.classList.add('active');
+  citationCheckBtn.classList.remove('active');
+});
+
+citationCheckBtn.addEventListener('click', () => {
+  currentMode = 'citation';
+  citationCheckBtn.classList.add('active');
+  factCheckBtn.classList.remove('active');
+});
+
 // Function to execute in page context
 function getSelectedTextFromPage() {
   return window.getSelection().toString();
@@ -61,8 +78,13 @@ verifyBtn.addEventListener('click', async () => {
   clearError();
 
   try {
+    // Determine endpoint based on mode
+    const endpoint = currentMode === 'fact' 
+      ? `${BACKEND_URL}/verify` 
+      : `${BACKEND_URL}/verify-citations`;
+    
     // Call backend API
-    const response = await fetch(API_ENDPOINT, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
