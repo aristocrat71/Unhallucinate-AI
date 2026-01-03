@@ -215,7 +215,7 @@ export default function HallucinationDetector() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex flex-wrap gap-2">
-              {mode === "claims" ? (
+              {mode === "claims" && (
                 <>
                   <button onClick={() => fillDemo("true")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
                     Try True Fact
@@ -225,18 +225,6 @@ export default function HallucinationDetector() {
                   </button>
                   <button onClick={() => fillDemo("mixed")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-slate-800 hover:bg-slate-800 hover:text-white text-slate-300 transition-colors">
                     Try Mixed Content
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => fillCitationDemo("correct")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-green-800/50 hover:bg-green-900/30 hover:text-white text-slate-300 transition-colors">
-                    Correct Citation
-                  </button>
-                  <button onClick={() => fillCitationDemo("wrongYear")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-yellow-800/50 hover:bg-yellow-900/30 hover:text-white text-slate-300 transition-colors">
-                    Wrong Year
-                  </button>
-                  <button onClick={() => fillCitationDemo("wrongVenue")} className="px-4 py-2 text-sm font-medium rounded-full bg-slate-900/50 border border-red-800/50 hover:bg-red-900/30 hover:text-white text-slate-300 transition-colors">
-                    Wrong Venue
                   </button>
                 </>
               )}
