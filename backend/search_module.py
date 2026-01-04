@@ -12,6 +12,8 @@ import aiohttp
 from typing import List, Dict
 from dotenv import load_dotenv
 from duckduckgo_search import DDGS
+import ssl
+import certifi
 
 load_dotenv()
 
@@ -58,7 +60,11 @@ async def search_serpapi(query: str, max_results: int = 3, timeout: int = 5) -> 
             "gl": "us",  # US region
         }
         
-        async with aiohttp.ClientSession() as session:
+        # Create SSL context to fix Windows DNS/SSL issues with aiohttp
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        connector = aiohttp.TCPConnector(ssl=ssl_context)
+        
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=timeout)) as response:
                 if response.status == 200:
                     data = await response.json()
@@ -72,9 +78,11 @@ async def search_serpapi(query: str, max_results: int = 3, timeout: int = 5) -> 
                     print(f"  SerpAPI returned {len(results)} results")
                     return results
                 else:
-                    print(f"  SerpAPI error: {response.status}")
+                    error_text = await response.text()
+                    print(f"  SerpAPI error: HTTP {response.status}")
+                    print(f"  SerpAPI response: {error_text[:200]}")
     except Exception as e:
-        print(f"  SerpAPI search error: {e}")
+        print(f"  SerpAPI search error: {type(e).__name__}: {e}")
     return []
 
 
