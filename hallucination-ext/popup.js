@@ -1,5 +1,5 @@
 // Configuration - Your Render.io backend URL
-const BACKEND_URL = 'https://gfgbq-team-syntaxnchill.onrender.com';
+const BACKEND_URL = 'https://unhallucinate-ai.onrender.com';
 const MAX_CHAR_LIMIT = 200;
 
 // Mode state
