@@ -14,7 +14,7 @@ export function Navbar() {
           <Link href="/verify" className="transition-colors hover:text-primary">
             Verification Engine
           </Link>
-          <Link href="https://github.com/ByteQuest-2025/GFGBQ-Team-syntaxnchill/blob/main/README.md" className="transition-colors hover:text-primary">
+          <Link href="https://github.com/ByteQuest-2025/GFGBQ-Team-syntaxnchill/blob/main/README.md" target="_blank" className="transition-colors hover:text-primary">
             API Docs
           </Link>
           <Link href="#" className="transition-colors hover:text-primary">
