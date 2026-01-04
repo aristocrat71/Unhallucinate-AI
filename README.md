@@ -1,12 +1,8 @@
 # AI Hallucination and Citation Verification System
 
-> **Problem Statement 3:** AI Hallucination and Citation Verification System  
-> **Team Name:** SyntaxNChill  
-> **Team Members:** Mitul Sheth and Priyanshu Makwana
+**Contributers : Mitul Sheth and Priyanshu Makwana**
 
-**Live Site:** [www.unhallucinate-ai.netlify.app](https://unhallucinate-ai.netlify.app/)  
-**Demo Video:** [[Link to Video](https://drive.google.com/file/d/1WMIk6qRn2daVxTOOtMWuHGR6JQIsv_22/view?usp=sharing)]  
-**Presentation:** [[Link to PPT](https://drive.google.com/file/d/1-wZ4_u-LPjIRVCrxAyXcfmJFvpWC4O0L/view?usp=sharing)]
+**Live Site:** [www.unhallucinate-ai.netlify.app](https://unhallucinate-ai.netlify.app/) 
 
 ## 📸 Screenshots
 
@@ -174,5 +170,4 @@ pytest tests/test_scenarios.py
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
----
-*Developed by Team SyntaxNChill for Problem Statement 3*
+_Have a coffee and keep coding_ ❤️

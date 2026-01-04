@@ -57,14 +57,10 @@ Detect AI hallucinations and verify claims in real-time. Select any text on the 
 
 ### Support
 
-For issues or feature requests, visit: https://github.com/syntaxnchill/hallucination-detector
+For issues or feature requests, visit: https://github.com/aristocrat71/Unhallucinate-AI
 
 ### License
 
 MIT License
 
 ---
-
-**Made during Byte Quest 2026 Hackathon** 🚀
-
-### Team: syntaxnchill

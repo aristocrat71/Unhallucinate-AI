@@ -36,7 +36,7 @@ export function Navbar() {
           <Link href="/verify" className="transition-colors hover:text-primary">
             Verification Engine
           </Link>
-          <Link href="https://github.com/ByteQuest-2025/GFGBQ-Team-syntaxnchill/blob/main/README.md" target="_blank" className="transition-colors hover:text-primary">
+          <Link href="https://github.com/aristocrat71/Unhallucinate-AI/blob/main/README.md" target="_blank" className="transition-colors hover:text-primary">
             API Docs
           </Link>
           <div className="relative group">
@@ -45,7 +45,7 @@ export function Navbar() {
             </button>
             <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
               <div className="bg-background border border-border/50 rounded-lg shadow-xl p-6 space-y-4">
-                <div className="text-center font-bold text-foreground text-lg">Team SyntaxNChill</div>
+                <div className="text-center font-bold text-foreground text-lg">Contributers</div>
                 <div className="h-px bg-white/20 my-3"></div>
                 <div className="flex items-center justify-between text-foreground">
                   <span className="text-base">Mitul Sheth</span>
@@ -86,7 +86,7 @@ export function Navbar() {
             {isDropdownOpen && (
               <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-80 transition-all duration-200">
                 <div className="bg-background border border-border/50 rounded-lg shadow-xl p-6 space-y-4">
-                  <div className="text-center font-bold text-foreground text-lg">Team SyntaxNChill</div>
+                  <div className="text-center font-bold text-foreground text-lg">Contributers</div>
                   <div className="h-px bg-white/20 my-3"></div>
                   <div className="flex items-center justify-between text-foreground">
                     <span className="text-base">Mitul Sheth</span>
@@ -117,7 +117,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-4 ml-auto">
-          <Link href="https://github.com/ByteQuest-2025/GFGBQ-Team-syntaxnchill" target="_blank">
+          <Link href="https://github.com/aristocrat71/Unhallucinate-AI" target="_blank">
             <Github className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
           </Link>
         </div>
