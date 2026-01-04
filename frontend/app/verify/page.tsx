@@ -223,6 +223,52 @@ export default function HallucinationDetector() {
               </p>
             </div>
 
+            {/* Trust Meter */}
+            {mode === "claims" && results && results.length > 0 && (() => {
+              const verified = results.filter(r => r.status === 'VERIFIED').length;
+              const hallucinated = results.filter(r => r.status === 'HALLUCINATED').length;
+              const unverifiable = results.length - verified - hallucinated;
+              const trustPercentage = Math.round((verified / results.length) * 100);
+              
+              return (
+                <div className="p-6 bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 shadow-xl backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-semibold text-slate-300">Text Trustworthiness</span>
+                    <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                      {trustPercentage}%
+                    </span>
+                  </div>
+                  
+                  <div className="w-full h-3 bg-slate-900/50 rounded-full overflow-hidden mb-4 shadow-inner">
+                    <div 
+                      className={cn(
+                        "h-full transition-all duration-700 ease-out rounded-full",
+                        trustPercentage >= 80 ? "bg-gradient-to-r from-green-500 to-green-400" :
+                        trustPercentage >= 50 ? "bg-gradient-to-r from-yellow-500 to-orange-400" :
+                        "bg-gradient-to-r from-red-500 to-red-400"
+                      )}
+                      style={{ width: `${trustPercentage}%` }}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="text-center p-3 bg-slate-900/40 rounded-lg border border-slate-800/50 hover:bg-slate-800/40 transition-colors">
+                      <div className="text-2xl font-bold text-green-400">{verified}</div>
+                      <div className="text-xs text-slate-400 mt-1">Verified</div>
+                    </div>
+                    <div className="text-center p-3 bg-slate-900/40 rounded-lg border border-slate-800/50 hover:bg-slate-800/40 transition-colors">
+                      <div className="text-2xl font-bold text-red-400">{hallucinated}</div>
+                      <div className="text-xs text-slate-400 mt-1">Hallucinated</div>
+                    </div>
+                    <div className="text-center p-3 bg-slate-900/40 rounded-lg border border-slate-800/50 hover:bg-slate-800/40 transition-colors">
+                      <div className="text-2xl font-bold text-slate-400">{unverifiable}</div>
+                      <div className="text-xs text-slate-400 mt-1">Unclear</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             <div className="grid gap-6">
               {mode === "claims" && results?.map((claim, idx) => (
                 <ClaimCard key={idx} result={claim} />
