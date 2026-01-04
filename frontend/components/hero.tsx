@@ -27,7 +27,7 @@ export function Hero() {
               variant="outline"
               className="h-12 px-8 text-base font-semibold border-border/50 bg-secondary/10 hover:bg-secondary/20"
             >
-              <Play className="mr-2 h-4 w-4 fill-current" /> Watch Demo
+              <Play className="mr-2 h-4 w-4 fill-current" /> <Link href="https://drive.google.com/file/d/1WMIk6qRn2daVxTOOtMWuHGR6JQIsv_22/view?usp=sharing" target="_blank">Watch Demo</Link>
             </Button>
           </div>
         </div>
